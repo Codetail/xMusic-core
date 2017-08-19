@@ -1,0 +1,8 @@
+.search-field {
+    float: left;
+    padding: 8px;
+}
+
+.search-field input {
+    padding: 4px;
+}

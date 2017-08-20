@@ -10,8 +10,9 @@ export default class Home extends Component {
     return (
       <div class={style.home}>
         <h1>Home</h1>
-        <p>This is the Home component.</p>
-        {props.children}
+        {
+          (props.children.length > 0) ? props.children : <p>Search for your music among KickAss media.</p>
+        }
       </div>
     );
   }

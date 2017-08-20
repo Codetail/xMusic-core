@@ -1,8 +1,28 @@
-.search-field {
-    float: left;
-    padding: 8px;
+.searchView {
+    flex-grow: 1 ;
+    display: flex;
+    background: #475dcc;
+    padding: 8px 4px 8px 32px;
+    overflow: hidden;
 }
 
-.search-field input {
-    padding: 4px;
+.searchView-input__focused {
+    background-color: #FAFAFA;
+    color: #333;
+}
+
+.searchView input::placeholder {
+    color: #fafafa;
+}
+
+.searchView .searchView-input {
+    flex-grow: 1;
+}
+
+.searchView .searchView-icon {
+    margin-right: 16px;
+}
+
+.searchView div {
+    vertical-align: middle;
 }

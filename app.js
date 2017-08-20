@@ -10,6 +10,7 @@ const morgan = require("morgan");
 const sources = require("./sources");
 const fs = require("fs");
 const path = require("path");
+const pump = require("pump");
 
 const torrentDir = __dirname + "/tmp";
 
@@ -88,27 +89,21 @@ app.all('/stream', (req, res) => {
         console.info(`torrent file: ${songFile.name}  with length: ${songFile.length}`);
 
         res.header("Accept-Ranges", "bytes");
+        res.header("Content-Disposition", "inline;filename*=UTF-8\'\'" + songFile.name);
         res.header("Content-Length", songFile.length);
         res.header("Content-Range", `bytes ${0}-${songFile.length}/${songFile.length}`);
         res.status(206).type("audio/mp3");
 
+        console.log(`streaming on path: ${path.join(engine.path, songFile.path)}`);
         const stream = fs.createReadStream(path.join(engine.path, songFile.path));
-
-        stream.once("end", () => {
-          console.log(`Stream closed for: ${songFile.name}`);
-          stream.close();
-          res.end();
-        });
-
-        stream.once("readable", () => {
-          stream.pipe(res);
-        });
-
+        pump(stream, res);
       }
     });
   });
 
-  engine.once('idle', () => engine.destroy())
+  engine.once('idle', () => {
+    engine.destroy()
+  })
 });
 
 app.use((req, res) => {

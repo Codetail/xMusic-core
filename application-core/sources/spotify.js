@@ -48,6 +48,11 @@ class SpotifySource extends Source {
     super();
   }
 
+
+  list() {
+    return super.list();
+  }
+
   search(query, params, options) {
     let q = `track:${query}`;
     if (params.artist) {

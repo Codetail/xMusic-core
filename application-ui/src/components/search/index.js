@@ -2,6 +2,7 @@ import {h, Component} from "preact";
 import * as http from "axios";
 import {Spinner, Icon} from "preact-mdl";
 import style from "./style.css";
+import api from "../../lib/api";
 
 export default class SearchView extends Component {
   cancelToken = null;
@@ -26,7 +27,7 @@ export default class SearchView extends Component {
       this.searchIcon.style.display = "none";
       this.spinner.style.display = "inline-block";
       this.spinner.classList.add("is-active");
-    }else{
+    } else {
       this.spinner.style.display = "none";
       this.searchIcon.style.display = "inline-block";
       this.spinner.classList.remove("is-active");
@@ -42,8 +43,8 @@ export default class SearchView extends Component {
 
     const query = event.target.value;
 
-    http.request({
-        url: "http://95.46.85.1:3000/search?song[title]=" + query,
+    api.http.request({
+        url: "/search?song[title]=" + query,
         cancelToken: new http.CancelToken((token) => {
           this.cancelToken = token;
         })

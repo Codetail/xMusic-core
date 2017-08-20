@@ -19,6 +19,39 @@ class LastFMSource extends HttpSource {
     };
   }
 
+
+  static converter() {
+    return (response) => {
+      response = JSON.parse(response);
+
+      const tracks = response.tracks || (response.hasOwnProperty("results") ? response.results.trackmatches : {});
+
+      if (!tracks || !tracks.track) {
+        return [];
+      } else {
+        return tracks.track.map((track) => {
+          const images = {};
+          track.image.forEach((image) => {
+            images[image.size] = image["#text"];
+          });
+
+          return {
+            title: track.name,
+            artist: typeof track.artist === "string" ? track.artist : track.artist.name,
+            images: images
+          }
+        });
+      }
+    };
+  }
+
+  list(params) {
+    params = Object.assign(params || {}, LastFMSource.defaultParams);
+    params.method = "chart.gettoptracks";
+
+    return this._makeHttpCal('/', params, LastFMSource.converter());
+  }
+
   /**
    * Searches for track using LastFm track.search method, search
    * site can narrowed by prodiving artist in parameter
@@ -37,28 +70,7 @@ class LastFMSource extends HttpSource {
     params.method = "track.search";
     params.track = query || " ";
 
-    return this._makeHttpCal("/", params, (response) => {
-      response = JSON.parse(response);
-
-      if (!response.results
-        || !response.results.trackmatches
-        || !response.results.trackmatches.track) {
-        return [];
-      } else {
-        return response.results.trackmatches.track.map((track) => {
-          const images = {};
-          track.image.forEach((image) => {
-            images[image.size] = image["#text"];
-          });
-
-          return {
-            title: track.name,
-            artist: track.artist,
-            images: images
-          }
-        });
-      }
-    })
+    return this._makeHttpCal("/", params, LastFMSource.converter())
   }
 }
 

@@ -36,43 +36,25 @@ app.get("/authorize/:source", (req, res) => {
   }
 });
 
-app.get('/search', (req, res) => {
+app.get('/list', (req, res, next) => {
+  const songsApi = new sources.LastFMSource();
+
+  songsApi.list()
+    .then((result) => {
+      res.status(200).json({result: result})
+    })
+    .catch((e) => {
+      console.error(e);
+      next(e);
+    })
+});
+
+app.get('/search', (req, res, next) => {
   const querySong = req.query.song || {};
 
-  const songsApi = new sources.KickAssSource();
+  const songsApi = new sources.LastFMSource();
 
-  songsApi.search(querySong.title, null, {
-      giveHealthStatus: true,
-      giveScore: true
-    })
-    .then((songs) => {
-      return songs.filter(song => song.artist)
-        .filter(song => {
-          if (querySong.artist) {
-            return querySong.artist.score(song.artist) > 0.6;
-          } else {
-            return true;
-          }
-        })
-        .map((song) => {
-          song.downloadLink = "/stream/magnet=" + Buffer.from(song.downloadLink).toString("base64");
-          return song;
-        });
-    })
-    .then((rawSongs) => {
-      const metaApi = new sources.SpotifySource();
-
-      const promises = rawSongs.map((song, index) => {
-        return metaApi.search(song.title, {artist: song.artist})
-          .then((songs) => {
-            if (songs.length > 0) {
-              rawSongs[index] = Object.assign(song, songs[0])
-            }
-          })
-      });
-
-      return Promise.all(promises).then(() => Promise.resolve(rawSongs));
-    })
+  songsApi.search(querySong.title, {artist: querySong.artist})
     .then((songs) => {
       res.status(200).json({
         query: {
@@ -82,10 +64,7 @@ app.get('/search', (req, res) => {
         result: songs
       })
     })
-    .catch((e) => {
-      console.error(e);
-      res.status(500).send(e);
-    });
+    .catch((e) => next);
 });
 
 app.all('/stream', (req, res) => {
@@ -126,6 +105,12 @@ app.use((req, res) => {
   res.status(404).json({
     "message": "undefined request"
   })
+});
+
+app.use((err, req, res) => {
+  console.error(err);
+
+  res.status(500).json({"message": "internal error"})
 });
 
 app.listen(3000, () => {

@@ -79,7 +79,7 @@ class HttpSource extends Source {
       params: params,
       baseURL: this.endpoint,
       transformResponse: converter,
-    })
+    }).then((response) => response.data)
   }
 }
 

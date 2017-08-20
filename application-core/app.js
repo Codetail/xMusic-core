@@ -19,11 +19,25 @@ app.use(morgan('combined'));
 app.use(bodyParser.json());
 app.use(cors());
 
+app.get("/authorize/:source", (req, res) => {
+  if (req.params.source === "spotify") {
+    if (!req.query.code) {
+      res.redirect(sources.SpotifySource.getAuthorizationUrl());
+    } else {
+      sources.SpotifySource.setAuthorizationCode(req.query.code)
+        .then(() => {
+          res.status(200).send("Access Granted");
+        })
+        .catch((e) => {
+          res.status(401).send("Failed during authorization");
+          console.error("Something went wrong", e);
+        })
+    }
+  }
+});
+
 app.get('/search', (req, res) => {
   const querySong = req.query.song || {};
-  const meta = Object.assign({
-    sources: ["LastFM"]
-  }, req.query.meta || {});
 
   const songsApi = new sources.KickAssSource();
 
@@ -31,7 +45,6 @@ app.get('/search', (req, res) => {
       giveHealthStatus: true,
       giveScore: true
     })
-    .then((response) => response.data)
     .then((songs) => {
       return songs.filter(song => song.artist)
         .filter(song => {
@@ -47,11 +60,10 @@ app.get('/search', (req, res) => {
         });
     })
     .then((rawSongs) => {
-      const metaApi = new sources.LastFMSource();
+      const metaApi = new sources.SpotifySource();
 
       const promises = rawSongs.map((song, index) => {
         return metaApi.search(song.title, {artist: song.artist})
-          .then(response => response.data)
           .then((songs) => {
             if (songs.length > 0) {
               rawSongs[index] = Object.assign(song, songs[0])
@@ -69,6 +81,10 @@ app.get('/search', (req, res) => {
         },
         result: songs
       })
+    })
+    .catch((e) => {
+      console.error(e);
+      res.status(500).send(e);
     });
 });
 

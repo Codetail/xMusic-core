@@ -2,6 +2,7 @@
  * Created by Ozodrukh on 8/20/17.
  */
 
+const Source = require("./source");
 const httpFramework = require("axios");
 const globalHttpInstance = httpFramework.create({
   timeout: 15 * 1000

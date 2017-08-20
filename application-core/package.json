@@ -12,6 +12,7 @@
     "peerflix": "^0.37.0",
     "pug": "^2.0.0-rc.3",
     "pump": "^1.0.2",
+    "spotify-web-api-node": "^2.4.0",
     "string_score": "^0.1.22",
     "torrent-stream": "^1.0.3",
     "webtorrent": "^0.98.19"
